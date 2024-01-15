@@ -1,5 +1,5 @@
 import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
-import { Book } from '@prisma/client';
+import { Book, UserOnBooks } from '@prisma/client';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
 @Injectable()
@@ -69,6 +69,22 @@ export class BooksService {
     public deleteById(id: Book['id']): Promise<Book> {
         return this.prismaService.book.delete({
             where: { id },
+        });
+    }
+
+    public async likeBook(likeData: Omit<UserOnBooks, 'id'>): Promise<Book> {
+        const { userId, bookId } = likeData;
+        return await this.prismaService.book.update({
+            where: { id: bookId },
+            data: {
+                users: {
+                    create: {
+                        user: {
+                            connect: { id: userId },
+                        },
+                    },
+                },
+            },
         });
     }
 
